@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="description" content="EdgeTune is an on-device LLM personalization framework for edge devices that combines GradCut with an adaptive reuse-or-re-tune strategy.">
+  <meta name="keywords" content="EdgeTune, GradCut, LLM Personalization, LoRA, Edge AI, On-Device Fine-Tuning">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>EdgeTune: Efficient On-Device LLM Personalization at the Edge</title>
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro" rel="stylesheet">
+  <link rel="stylesheet" href="./static/css/bulma.min.css">
+  <link rel="stylesheet" href="./static/css/fontawesome.all.min.css">
+  <link rel="stylesheet" href="./static/css/index.css">
+  <link rel="icon" href="./static/images/favicon.png">
+  <script defer src="./static/js/fontawesome.all.min.js"></script>
+</head>
+<body>
+<section class="hero">
+  <div class="hero-body">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column has-text-centered">
+          <h1 class="title is-1 publication-title">EdgeTune: Efficient On-Device LLM Personalization at the Edge</h1>
+          <div class="is-size-5 publication-authors">
+            <span class="author-block">Zhenyu Wang</span>,
+            <span class="author-block">Rana Muhammad Shahroz Khan</span>,
+            <span class="author-block">Tianlong Chen</span>,
+            <span class="author-block">Shahriar Nirjon</span>
+          </div>
+          <div class="is-size-5 publication-authors">
+            <span class="author-block">UNC Chapel Hill</span>
+          </div>
+          <div class="column has-text-centered">
+            <div class="publication-links">
+              <span class="link-block"><a href='https://github.com/zywang96/EdgeTune' class="external-link button is-normal is-rounded is-dark"><span class="icon"><i class="fab fa-github"></i></span><span>Code</span></a></span>
+              <span class="link-block"><a class="external-link button is-normal is-rounded is-dark"><span class="icon"><i class="fas fa-file-pdf"></i></span><span>Paper</span></a></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="overview">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3 section-title">Overview</h2>
+        <div class="content has-text-justified">
+          <p>EdgeTune is an on-device LLM personalization framework designed for resource-constrained edge devices such as smartphones and embedded GPUs. While edge-scale LLMs can already run locally, adapting them to a user's private data remains expensive because LoRA reduces the number of trainable parameters but still requires substantial backward computation through the backbone.</p>
+          <p>To address this challenge, EdgeTune combines two complementary ideas. <strong>GradCut</strong> reduces unnecessary adaptation cost by identifying which matrices deserve dedicated adapters, which can share adapters, and which can be skipped. On top of that, EdgeTune adds an <strong>adaptive reuse-or-re-tune strategy</strong> that decides whether a previously trained patch can be safely reused for a newly downloaded model release, or whether retuning is actually necessary.</p>
+          <p>These two modules reduce the amortized cost of continual on-device personalization while preserving the accuracy of always-fine-tune baselines. The framework is modular, model-agnostic, and designed to fit practical edge deployment settings where privacy, latency, and energy all matter.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<section class="section">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered">
+      <div class="column is-full">
+        <div class="content">
+          <div style="display: flex; flex-direction: column; gap: 1rem; align-items: center;">
+            <img src="static/images/arch1.png" alt="EdgeTune figure 1" style="width: 50%; max-width: 900px; height: auto;">
+            <img src="static/images/arch2.png" alt="EdgeTune figure 2" style="width: 80%; max-width: 900px; height: auto;">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<section class="section" id="method">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3 section-title">Two Complementary Algorithmic Contributions</h2>
+        <div class="content has-text-justified">
+          <p><strong>GradCut</strong> is the adapter fine-tuning module in EdgeTune. Instead of attaching LoRA everywhere with the same treatment, GradCut scores weight matrices using an importance-aware benefit-per-cost metric. Based on that score, a matrix can receive a dedicated adapter, share an adapter with lower-value matrices, or receive no adapter at all. This keeps computation focused on the most useful update paths and cuts unnecessary overhead during personalization.</p>
+          <p><strong>The Adaptive Re-tuning Strategy</strong> handles continual model evolution. When a new cloud model release arrives, EdgeTune does not immediately assume the old patch is obsolete. Instead, it performs a lightweight, data-free compatibility check using patch-conditioned drift and a patch-tied indicator. If the old patch is still compatible, EdgeTune reuses it. If not, the framework triggers a budgeted retune. This reuse-or-re-tune decision is what allows EdgeTune to save substantial energy and time across long sequences of model updates.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<section class="section" id="application-result">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3 section-title">Illustrative Application</h2>
+        <div class="content has-text-justified">
+          <p>For example, we build an application---<strong>Mood Journal</strong>---that records short journal entries provided as typed text or speech and uses a personalized LLM to infer the user’s underlying mood together with contextual information. As model releases evolve, stale patches cause personalization drift and reduce user approval. EdgeTune identifies when that drift becomes harmful and selectively retunes only when necessary, allowing it to stay close to the always-fine-tune reference while avoiding many unnecessary updates.</p>
+          <p>EdgeTune achieves higher user approval than PortLLM, performs substantially fewer retuning updates, and reduces energy compared with the always-retune baseline. As shown in the following figure, it highlighs the core idea of EdgeTune---to preserve personalization quality while lowering the amortized cost of continual on-device adaptation. For more details, please refer to the paper.</p>
+        </div>
+        <img class="arch-image" src="./static/images/application_result.png" alt="EdgeTune application result on Mood Journal" >
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="acknowledgement">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3 section-title">Acknowledgements</h2>
+        <div class="content has-text-justified">
+          <p>
+            This work was supported, in part, by grants NSF EAGER NAIRR Pilot 2503073 (PI Nirjon) and NSF CAREER 2047461 (PI Nirjon).
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container is-max-desktop">
+    <div class="content has-text-centered">
+      <p>© 2026 UNC Chapel Hill</p>
+    </div>
+  </div>
+</footer>
+</body>
+</html>
